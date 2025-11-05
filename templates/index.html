@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RSS News Feed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <div class="max-w-4xl mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6 text-center">📰 RSS News Feed</h1>
+
+        <div class="flex gap-3 items-center mb-4">
+            <select name="source" id="source" class="border p-2 rounded bg-white">
+                {% for name in sources %}
+                    <option value="{{ name }}" {% if name == current_source %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>            
+
+            
+        </div>
+
+        <div id="news-container">
+            {% for entry in entries %}
+                <div class="mb-6 p-4 border rounded bg-white shadow hover:shadow-md transition flex gap-4">
+                    {% if entry.image %}
+                        <img src="{{ entry.image }}" alt="Thumbnail" class="w-32 h-24 object-cover rounded">
+                    {% endif %}
+                    <div>
+                        <h2 class="text-xl font-bold">
+                            <a href="/article?link={{ entry.link }}&source={{ current_source }}"
+                               class="text-blue-600 hover:underline">
+                               {{ entry.title }}
+                            </a>
+                        </h2>
+                        <p class="text-gray-600 text-sm mb-2">{{ entry.time }}</p>
+                        <div class="text-gray-800 text-sm">{{ entry.summary }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('source').addEventListener('change', function () {
+            const selected = this.value;
+            window.location.href = `/?source=${encodeURIComponent(selected)}`;
+        });
+
+        async function refreshFeed() {
+            const source = document.getElementById('source').value;
+            try {
+                const res = await fetch(`/refresh?source=${encodeURIComponent(source)}`);
+                if (!res.ok) throw new Error("Failed to fetch");
+
+                const data = await res.json();
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+
+                data.articles.forEach(article => {
+                    const div = document.createElement('div');
+                    div.className = 'mb-6 p-4 border rounded bg-white shadow hover:shadow-md transition flex gap-4';
+
+                    div.innerHTML = `
+                        ${article.image ? `<img src="${article.image}" alt="Thumbnail" class="w-32 h-24 object-cover rounded">` : ""}
+                        <div>
+                            <h2 class="text-xl font-bold">
+                                <a href="/article?link=${encodeURIComponent(article.link)}&source=${encodeURIComponent(source)}"
+                                   class="text-blue-600 hover:underline">
+                                   ${article.title}
+                                </a>
+                            </h2>
+                            <p class="text-gray-600 text-sm mb-2">${article.time}</p>
+                            <div class="text-gray-800 text-sm">${article.summary}</div>
+                        </div>
+                    `;
+
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error("Refresh failed:", err);
+                alert("Failed to refresh news. Please try again.");
+            }
+        }
+    </script>
+</body>
+</html>
