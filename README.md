@@ -28,7 +28,7 @@ Libraries Used: Feedparser, Jinja2, Werkzeug, Click, Blinker, MarkupSafe, itsdan
 
 🚀 How to Run
   # Clone the repository
-  git clone https://github.com/yourusername/rss-news-webapp.git
+  git clone https://github.com/mahi-ayub/rss-news-webapp.git
 
   # Navigate to the project folder
   cd rss-news-webapp
